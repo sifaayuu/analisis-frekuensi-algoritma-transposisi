@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisis Frekuensi - Algoritma Transposisi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #2c3e50;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .input-section {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin: 1rem 0 0.5rem;
+            font-weight: bold;
+        }
+
+        select, input, textarea {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .output-section {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #frequencyResult {
+            margin-top: 1rem;
+        }
+
+        .freq-bar {
+            display: flex;
+            align-items: center;
+            margin: 0.5rem 0;
+        }
+
+        .freq-char {
+            width: 30px;
+            font-weight: bold;
+        }
+
+        .freq-visual {
+            flex-grow: 1;
+            height: 20px;
+            background-color: #3498db;
+            margin: 0 10px;
+            border-radius: 2px;
+        }
+
+        .freq-count {
+            width: 50px;
+            text-align: right;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Analisis Frekuensi - Algoritma Transposisi</h1>
+    </header>
+    
+    <main>
+        <section class="input-section">
+            <label for="mode">Pilih Mode:</label>
+            <select id="mode">
+                <option value="encrypt">Enkripsi</option>
+                <option value="decrypt">Dekripsi</option>
+                <option value="analyze">Analisis Frekuensi</option>
+            </select>
+        
+            <label for="key">Masukkan Kunci (Untuk Enkripsi/Dekripsi):</label>
+            <input type="text" id="key" placeholder="Contoh: 214653">
+            
+            <label for="plaintext">Masukkan Teks:</label>
+            <textarea id="plaintext" rows="5" placeholder="Tulis teks di sini...">universitas dian nuswantoro udinus polke</textarea>
+            <button onclick="processText()">Proses</button>
+        </section>
+        
+        <section class="output-section">
+            <h2>Hasil</h2>
+            <div id="frequencyResult"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2024 Kriptografi</p>
+    </footer>
+
+    <script>
+        function analyzeFrequency(text) {
+            const frequency = {};
+            const cleanText = text.toLowerCase().replace(/[^a-z]/g, '');
+            
+            for (let char of cleanText) {
+                frequency[char] = (frequency[char] || 0) + 1;
+            }
+            
+            const sortedFreq = Object.entries(frequency)
+                .sort((a, b) => b[1] - a[1]);
+            
+            const maxFreq = Math.max(...Object.values(frequency));
+            
+            const resultDiv = document.getElementById('frequencyResult');
+            resultDiv.innerHTML = '';
+            
+            sortedFreq.forEach(([char, count]) => {
+                const percentage = (count / cleanText.length * 100).toFixed(2);
+                const barWidth = (count / maxFreq * 100).toFixed(2);
+                
+                const freqBar = `
+                    <div class="freq-bar">
+                        <span class="freq-char">${char}</span>
+                        <div class="freq-visual" style="width: ${barWidth}%"></div>
+                        <span class="freq-count">${count} (${percentage}%)</span>
+                    </div>
+                `;
+                resultDiv.innerHTML += freqBar;
+            });
+        }
+
+        function transpose(text, key, encrypt = true) {
+            const cleanText = text.toLowerCase().replace(/[^a-z]/g, '');
+            const keyArray = key.split('').map(Number);
+            const numCols = keyArray.length;
+            const numRows = Math.ceil(cleanText.length / numCols);
+            
+            const matrix = Array(numRows).fill().map(() => Array(numCols).fill(''));
+            let index = 0;
+
+            for (let row = 0; row < numRows; row++) {
+                for (let col = 0; col < numCols; col++) {
+                    if (index < cleanText.length) {
+                        matrix[row][col] = cleanText[index++];
+                    }
+                }
+            }
+
+            let result = '';
+
+            if (encrypt) {
+                for (let i = 1; i <= numCols; i++) {
+                    const col = keyArray.indexOf(i);
+                    for (let row = 0; row < numRows; row++) {
+                        if (matrix[row][col]) {
+                            result += matrix[row][col];
+                        }
+                    }
+                }
+            } else {
+                const colLengths = Array(numCols).fill(numRows);
+                if (cleanText.length % numCols) {
+                    const lastRow = cleanText.length % numCols;
+                    for (let i = lastRow; i < numCols; i++) {
+                        colLengths[keyArray.indexOf(i + 1)]--;
+                    }
+                }
+
+                const columns = Array(numCols).fill().map(() => []);
+                let currentPos = 0;
+
+                for (let i = 1; i <= numCols; i++) {
+                    const col = keyArray.indexOf(i);
+                    for (let j = 0; j < colLengths[col]; j++) {
+                        columns[col].push(cleanText[currentPos++]);
+                    }
+                }
+
+                for (let row = 0; row < numRows; row++) {
+                    for (let col = 0; col < numCols; col++) {
+                        if (row < columns[col].length) {
+                            result += columns[col][row];
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        function processText() {
+            const mode = document.getElementById('mode').value;
+            const key = document.getElementById('key').value;
+            const text = document.getElementById('plaintext').value;
+            const resultDiv = document.getElementById('frequencyResult');
+            
+            if (!text) {
+                alert('Mohon masukkan teks!');
+                return;
+            }
+            
+            if ((mode === 'encrypt' || mode === 'decrypt') && !key) {
+                alert('Mohon masukkan kunci untuk enkripsi/dekripsi!');
+                return;
+            }
+            
+            if (mode === 'analyze') {
+                analyzeFrequency(text);
+            } else {
+                const result = transpose(text, key, mode === 'encrypt');
+                resultDiv.innerHTML = `
+                    <p><strong>${mode === 'encrypt' ? 'Ciphertext' : 'Plaintext'}:</strong></p>
+                    <p style="margin-top: 1rem; padding: 1rem; border: 1px solid #ddd; background-color: #f9f9f9;">${result}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
